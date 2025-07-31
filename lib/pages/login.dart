@@ -1,6 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:motivation_grade_reports_student/pages/register_account.dart';
 class LoginScreen extends StatelessWidget {
+
+// Initialize variable
+  bool isStudent;
+  // Call the constructor for the LoginScreen
+  LoginScreen({super.key, required this.isStudent}); // LoginScreen(isStudent = false);
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -65,6 +72,7 @@ class LoginScreen extends StatelessWidget {
                       ),
                     ),
                     onPressed: () {
+                      // Check if the user is a student or staff
                       Navigator.push(
                         context,
                         MaterialPageRoute(builder: (context) => RegisterAccountScreen()),

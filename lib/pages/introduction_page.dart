@@ -17,7 +17,7 @@ class Introduction extends StatelessWidget {
               isStudent = false; // Set the constant to false for staff login
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => LoginScreen()),
+                MaterialPageRoute(builder: (context) => LoginScreen(isStudent: false ,)),
               );
             },
             child: Text("Login as Staff"),
@@ -27,7 +27,7 @@ class Introduction extends StatelessWidget {
               isStudent = true; // Set the constant to true for student login
               Navigator.push(
                 context,
-                MaterialPageRoute(builder: (context) => LoginScreen()),
+                MaterialPageRoute(builder: (context) => LoginScreen(isStudent: true,)),
               );
             },
             child: Text("Login as Student"),
