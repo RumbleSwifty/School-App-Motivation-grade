@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
 class RegisterAccountScreen extends StatelessWidget {
-  const RegisterAccountScreen({Key? key}) : super(key: key);
+  final bool isStudent; 
+  const RegisterAccountScreen({super.key, required this.isStudent});
+// LoginScreen({super.key, required this.isStudent}); 
 
   @override
   Widget build(BuildContext context) {

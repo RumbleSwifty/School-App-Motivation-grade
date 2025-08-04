@@ -12,6 +12,7 @@ class Introduction extends StatelessWidget {
       body: Center(
         child: Column(
           children:[
+          SizedBox(height: 150), // Add some space at the top
             ElevatedButton( // Button to navigate to the login screen for staff
             onPressed: () {
               isStudent = false; // Set the constant to false for staff login
@@ -22,6 +23,7 @@ class Introduction extends StatelessWidget {
             },
             child: Text("Login as Staff"),
           ),
+          SizedBox(height: 20), // Add some space between the buttons
           ElevatedButton(// Button to navigate to the login screen for students
             onPressed: () {
               isStudent = true; // Set the constant to true for student login

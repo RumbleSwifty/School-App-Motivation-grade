@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:motivation_grade_reports_student/pages/register_account.dart';
+import 'package:motivation_grade_reports_student/pages/staff_home.dart';
+import 'package:motivation_grade_reports_student/pages/student_home.dart';
 class LoginScreen extends StatelessWidget {
 
 // Initialize variable
@@ -72,11 +74,22 @@ class LoginScreen extends StatelessWidget {
                       ),
                     ),
                     onPressed: () {
-                      // Check if the user is a student or staff
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (context) => RegisterAccountScreen()),
-                      );
+                      // Check if it is a student or a staff memeber
+                      if (isStudent == true) {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => StudentHomePage(),
+                          ),
+                        );
+                      } else if (isStudent == false) {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => StaffHomePage(),
+                          ),
+                        );
+                      }
                     },
                     child: Text("Continue", style: TextStyle(fontSize: 16)),
                     
@@ -146,7 +159,7 @@ class LoginScreen extends StatelessWidget {
                     onPressed: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => RegisterAccountScreen()),
+                        MaterialPageRoute(builder: (context) => RegisterAccountScreen(isStudent: isStudent)),
                       );
                     },
                   ),
