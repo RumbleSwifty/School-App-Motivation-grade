@@ -18,3 +18,14 @@ class Staff {
        required this.classTeaching,
  }); 
 }
+
+class StaffClass {
+  final String className;
+  final List<Staff> staffMembers;
+
+  //Constructor- initial object creation
+  StaffClass({
+    required this.className,
+    required this.staffMembers,
+  });
+}

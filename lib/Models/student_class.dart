@@ -7,6 +7,7 @@ class Student {
    final String phone;
    final DateTime dateOfBirth;
    final int age;
+   final Map<DateTime, int> studentMotivation;  //Student's motivation 
   //Constructor- initial object creation
   Student({
        required this.id,
@@ -17,5 +18,6 @@ class Student {
        required this.phone,
        required this.classAttending,
        required this.age,
+       required this.studentMotivation,
  }); 
 }

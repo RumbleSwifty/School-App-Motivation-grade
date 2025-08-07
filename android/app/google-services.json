@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "675490396910",
+    "project_id": "school-motivation-app-adf2d",
+    "storage_bucket": "school-motivation-app-adf2d.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:675490396910:android:15ca51966ccb7b713891ff",
+        "android_client_info": {
+          "package_name": "com.example.motivation_grade_reports_student"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD9JkvHgnQJNW0It4naCBZ2fpxAiNt130Q"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
