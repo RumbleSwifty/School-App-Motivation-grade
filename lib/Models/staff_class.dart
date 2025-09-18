@@ -16,16 +16,18 @@ class Staff {
        required this.email,
        required this.phone,
        required this.classTeaching,
- }); 
+ });
+ Map<String, dynamic> toMap() {
+   return {
+     'id': id,
+     'name': name,
+     'surname': surname,
+     'dateOfBirth': dateOfBirth.toIso8601String(),
+     'email': email,
+     'phone': phone,
+     'classTeaching': classTeaching,
+   };
+ }
 }
 
-class StaffClass {
-  final String className;
-  final List<Staff> staffMembers;
 
-  //Constructor- initial object creation
-  StaffClass({
-    required this.className,
-    required this.staffMembers,
-  });
-}

@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:motivation_grade_reports_student/services/auth_service.dart';
+import 'package:motivation_grade_reports_student/pages/introduction_page.dart';
 
 class StudentHomePage extends StatefulWidget {
   @override
@@ -6,9 +8,24 @@ class StudentHomePage extends StatefulWidget {
 }
 
 class _StudentHomePageState extends State<StudentHomePage> {
+  final AuthService _authService = AuthService();
   double dailyMotivation = 0.2;
   double weeklyMotivation = 0.5;
   double yearlyMotivation = 0.9;
+
+  Future<void> _signOut() async {
+    try {
+      await _authService.signOut();
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => Introduction()),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error signing out: ${e.toString()}')),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -33,7 +50,10 @@ class _StudentHomePageState extends State<StudentHomePage> {
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                   ),
                   Spacer(),
-                  Icon(Icons.settings, size: 28),
+                  GestureDetector(
+                    onTap: _signOut,
+                    child: Icon(Icons.settings, size: 28),
+                  ),
                   SizedBox(width: 16),
                   Icon(Icons.notifications_none, size: 28),
                 ],

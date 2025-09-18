@@ -1,7 +1,29 @@
 import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'package:motivation_grade_reports_student/services/auth_service.dart';
+import 'package:motivation_grade_reports_student/pages/introduction_page.dart';
 
-class StaffHomePage extends StatelessWidget {
+class StaffHomePage extends StatefulWidget {
+  @override
+  _StaffHomePageState createState() => _StaffHomePageState();
+}
+
+class _StaffHomePageState extends State<StaffHomePage> {
+  final AuthService _authService = AuthService();
+
+  Future<void> _signOut() async {
+    try {
+      await _authService.signOut();
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => Introduction()),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error signing out: ${e.toString()}')),
+      );
+    }
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -23,6 +45,11 @@ class StaffHomePage extends StatelessWidget {
                   Text(
                     'Hello Smith',
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+                  ),
+                  Spacer(),
+                  GestureDetector(
+                    onTap: _signOut,
+                    child: Icon(Icons.logout, size: 28, color: Colors.red),
                   ),
                 ],
               ),

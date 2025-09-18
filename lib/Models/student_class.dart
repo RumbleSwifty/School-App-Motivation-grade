@@ -19,5 +19,21 @@ class Student {
        required this.classAttending,
        required this.age,
        required this.studentMotivation,
- }); 
+      }); 
+
+  Map<String, dynamic> toMap() {
+    return {
+      'id': id,
+      'name': name,
+      'surname': surname,
+      'dateOfBirth': dateOfBirth.toIso8601String(),
+      'email': email,
+      'phone': phone,
+      'classAttending': classAttending,
+      'age': age,
+      'studentMotivation': studentMotivation.map(
+        (key, value) => MapEntry(key.toIso8601String(), value),
+      ),
+    };
+  }
 }
