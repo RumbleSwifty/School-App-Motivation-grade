@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:motivation_grade_reports_student/Models/staff_class.dart';
 import 'package:motivation_grade_reports_student/Models/student_class.dart';
+import 'package:motivation_grade_reports_student/Models/constants.dart';
 import 'package:motivation_grade_reports_student/services/auth_service.dart';
+import 'package:motivation_grade_reports_student/services/user_service.dart';
 import 'package:motivation_grade_reports_student/pages/student_home.dart';
 import 'package:motivation_grade_reports_student/pages/staff_home.dart';
 import 'package:motivation_grade_reports_student/firebase_provider.dart';
@@ -20,15 +23,20 @@ class _RegisterAccountScreenState extends State<RegisterAccountScreen> {
   final TextEditingController _surnameController = TextEditingController();
   final TextEditingController _phoneController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
-  final TextEditingController _classController = TextEditingController();
   final TextEditingController _usernameController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController = TextEditingController();
   
   final AuthService _authService = AuthService();
   final FirebaseProvider _firebaseProvider = FirebaseProvider();
+  final UserService _userService = UserService();
   DateTime? _selectedBirthdate;
   bool _isLoading = false;
+  
+  // Selected subjects and grades
+  List<String> _selectedSubjects = [];
+  String? _selectedGrade;
+  List<String> _selectedGrades = []; // For staff - can teach multiple grades
   
   @override
   void dispose() {
@@ -36,7 +44,6 @@ class _RegisterAccountScreenState extends State<RegisterAccountScreen> {
     _surnameController.dispose();
     _phoneController.dispose();
     _emailController.dispose();
-    _classController.dispose();
     _usernameController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
@@ -50,14 +57,16 @@ class _RegisterAccountScreenState extends State<RegisterAccountScreen> {
         _surnameController.text.isEmpty ||
         _phoneController.text.isEmpty ||
         _emailController.text.isEmpty ||
-        _classController.text.isEmpty ||
         _usernameController.text.isEmpty ||
         _passwordController.text.isEmpty ||
         _confirmPasswordController.text.isEmpty ||
-        _selectedBirthdate == null) {
+        _selectedBirthdate == null ||
+        _selectedSubjects.isEmpty ||
+        (widget.isStudent && _selectedGrade == null) ||
+        (!widget.isStudent && _selectedGrades.isEmpty)) {
       print('Validation failed - missing fields'); // Debug print
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Please fill in all required fields including birthdate')),
+        SnackBar(content: Text('Please fill in all required fields including birthdate, subjects, and ${widget.isStudent ? 'grade' : 'grades'}')),
       );
       print('Validation failed');
       return;
@@ -84,30 +93,38 @@ class _RegisterAccountScreenState extends State<RegisterAccountScreen> {
     try {
       print('Starting Firebase Auth registration...');
       // Create Firebase user with email and password
-      await _authService.signUpWithEmailPassword(
+      UserCredential? userCredential = await _authService.signUpWithEmailPassword(
         _emailController.text.trim(),
         _passwordController.text,
       );
       print('Firebase Auth registration successful!');
 
+      // Get the Firebase Auth UID for the newly created user
+      String firebaseUID = userCredential!.user!.uid;
+
       // Create user data objects (you can save these to Firestore later)
       if (widget.isStudent == true) {
         print('Creating student object...');
         Student newStudent = Student(
-          id: _usernameController.text,
+          id: firebaseUID, // Use Firebase UID instead of username
           name: _nameController.text,
           surname: _surnameController.text,
           dateOfBirth: _selectedBirthdate ?? DateTime.now(),
           email: _emailController.text,
           phone: _phoneController.text,
-          classAttending: _classController.text,
+          subjects: _selectedSubjects,
+          grade: _selectedGrade!,
           age: DateTime.now().year - (_selectedBirthdate?.year ?? 0),
           studentMotivation: {},
+          profileImagePath: 'assets/images/userprofile.png', // Default profile image
         );
         print('Student object created successfully!');
         // Save newStudent to Firestore
         print('Saving student to Firestore...');
         await _firebaseProvider.addStudent(newStudent: newStudent);
+        
+        // Set user role to student
+        await _userService.setUserRole(firebaseUID, 'student');
         print('Student saved to Firestore successfully!');
         
         // Navigate to student home
@@ -120,18 +137,23 @@ class _RegisterAccountScreenState extends State<RegisterAccountScreen> {
         print('Creating staff object...');
         // Handle staff registration
         Staff newStaff = Staff(
-          id: _usernameController.text,
+          id: firebaseUID, // Use Firebase UID instead of username
           name: _nameController.text,
           surname: _surnameController.text,
           email: _emailController.text,
           phone: _phoneController.text,
-          classTeaching: _classController.text,
+          subjects: _selectedSubjects,
+          grades: _selectedGrades,
           dateOfBirth: _selectedBirthdate ?? DateTime.now(),
+          profileImagePath: 'assets/images/userprofile.png', // Default profile image
         );
         print('Staff object created successfully!');
         // Save newStaff to Firestore
         print('Saving staff to Firestore...');
         await _firebaseProvider.addStaff(newStaff: newStaff);
+        
+        // Set user role to staff
+        await _userService.setUserRole(firebaseUID, 'staff');
         print('Staff saved to Firestore successfully!');
         
         // Navigate to staff home
@@ -293,19 +315,115 @@ class _RegisterAccountScreenState extends State<RegisterAccountScreen> {
                   ),
                 ),
                 SizedBox(height: 20),
-                // Class teaching/attending
-                TextField(
-                  controller: _classController,
-                  decoration: InputDecoration(
-                    labelText: "Class teaching/attending",
-                    hintText: "Type your class",
-                    suffixIcon: Icon(Icons.close, color: Colors.black54),
-                    border: border,
-                    enabledBorder: border,
-                    focusedBorder: border.copyWith(
-                      borderSide: BorderSide(color: Color(0xFFD1C7E0), width: 2),
+                
+                // Grade Selection (for students) or Grades Teaching (for staff)
+                Text(
+                  widget.isStudent ? "Select Grade" : "Select Grades Teaching",
+                  style: TextStyle(color: Color(0xFFD1C7E0), fontSize: 16, fontWeight: FontWeight.w500),
+                ),
+                SizedBox(height: 8),
+                if (widget.isStudent)
+                  // Single grade selection for students
+                  Container(
+                    width: double.infinity,
+                    padding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Color(0xFFD1C7E0)),
+                      borderRadius: BorderRadius.circular(8),
                     ),
-                    labelStyle: TextStyle(color: Color(0xFFD1C7E0)),
+                    child: DropdownButtonHideUnderline(
+                      child: DropdownButton<String>(
+                        value: _selectedGrade,
+                        hint: Text("Select your grade"),
+                        isExpanded: true,
+                        items: grades.map((String grade) {
+                          return DropdownMenuItem<String>(
+                            value: grade,
+                            child: Text("Grade $grade"),
+                          );
+                        }).toList(),
+                        onChanged: (String? newValue) {
+                          setState(() {
+                            _selectedGrade = newValue;
+                          });
+                        },
+                      ),
+                    ),
+                  )
+                else
+                  // Multiple grades selection for staff
+                  Container(
+                    width: double.infinity,
+                    padding: EdgeInsets.all(8),
+                    decoration: BoxDecoration(
+                      border: Border.all(color: Color(0xFFD1C7E0)),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Wrap(
+                      spacing: 8,
+                      runSpacing: 4,
+                      children: grades.map((String grade) {
+                        final bool isSelected = _selectedGrades.contains(grade);
+                        return FilterChip(
+                          label: Text("Grade $grade"),
+                          selected: isSelected,
+                          onSelected: (bool selected) {
+                            setState(() {
+                              if (selected) {
+                                _selectedGrades.add(grade);
+                              } else {
+                                _selectedGrades.remove(grade);
+                              }
+                            });
+                          },
+                          selectedColor: Color.fromARGB(255, 168, 128, 230),
+                          backgroundColor: Colors.grey[200],
+                          labelStyle: TextStyle(
+                            color: isSelected ? Colors.white : Colors.black,
+                          ),
+                        );
+                      }).toList(),
+                    ),
+                  ),
+                SizedBox(height: 20),
+                
+                // Subjects Selection
+                Text(
+                  "Select Subjects",
+                  style: TextStyle(color: Color(0xFFD1C7E0), fontSize: 16, fontWeight: FontWeight.w500),
+                ),
+                SizedBox(height: 8),
+                Container(
+                  width: double.infinity,
+                  padding: EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Color(0xFFD1C7E0)),
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Wrap(
+                    spacing: 8,
+                    runSpacing: 4,
+                    children: subjects.map((String subject) {
+                      final bool isSelected = _selectedSubjects.contains(subject);
+                      return FilterChip(
+                        label: Text(subject),
+                        selected: isSelected,
+                        onSelected: (bool selected) {
+                          setState(() {
+                            if (selected) {
+                              _selectedSubjects.add(subject);
+                            } else {
+                              _selectedSubjects.remove(subject);
+                            }
+                          });
+                        },
+                        selectedColor: Color.fromARGB(255, 168, 128, 230),
+                        backgroundColor: Colors.grey[200],
+                        labelStyle: TextStyle(
+                          color: isSelected ? Colors.white : Colors.black,
+                        ),
+                      );
+                    }).toList(),
                   ),
                 ),
                 SizedBox(height: 20),
