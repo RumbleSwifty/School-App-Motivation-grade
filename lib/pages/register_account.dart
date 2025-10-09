@@ -4,7 +4,6 @@ import 'package:motivation_grade_reports_student/Models/staff_class.dart';
 import 'package:motivation_grade_reports_student/Models/student_class.dart';
 import 'package:motivation_grade_reports_student/Models/constants.dart';
 import 'package:motivation_grade_reports_student/services/auth_service.dart';
-import 'package:motivation_grade_reports_student/services/user_service.dart';
 import 'package:motivation_grade_reports_student/pages/student_home.dart';
 import 'package:motivation_grade_reports_student/pages/staff_home.dart';
 import 'package:motivation_grade_reports_student/firebase_provider.dart';
@@ -29,7 +28,6 @@ class _RegisterAccountScreenState extends State<RegisterAccountScreen> {
   
   final AuthService _authService = AuthService();
   final FirebaseProvider _firebaseProvider = FirebaseProvider();
-  final UserService _userService = UserService();
   DateTime? _selectedBirthdate;
   bool _isLoading = false;
   
@@ -122,9 +120,6 @@ class _RegisterAccountScreenState extends State<RegisterAccountScreen> {
         // Save newStudent to Firestore
         print('Saving student to Firestore...');
         await _firebaseProvider.addStudent(newStudent: newStudent);
-        
-        // Set user role to student
-        await _userService.setUserRole(firebaseUID, 'student');
         print('Student saved to Firestore successfully!');
         
         // Navigate to student home
@@ -151,9 +146,6 @@ class _RegisterAccountScreenState extends State<RegisterAccountScreen> {
         // Save newStaff to Firestore
         print('Saving staff to Firestore...');
         await _firebaseProvider.addStaff(newStaff: newStaff);
-        
-        // Set user role to staff
-        await _userService.setUserRole(firebaseUID, 'staff');
         print('Staff saved to Firestore successfully!');
         
         // Navigate to staff home

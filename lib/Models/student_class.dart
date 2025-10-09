@@ -8,7 +8,7 @@ class Student {
    final String phone;
    final DateTime dateOfBirth;
    final int age;
-   final Map<DateTime, int> studentMotivation;  //Student's motivation 
+   final Map<DateTime, double> studentMotivation;  //Student's motivation 
    final String? profileImagePath;  // Path to profile image
   //Constructor- initial object creation
   Student({
@@ -47,11 +47,11 @@ class Student {
   /// Create Student object from Firestore Map data
   factory Student.fromMap(Map<String, dynamic> map) {
     // Convert string keys back to DateTime for studentMotivation
-    Map<DateTime, int> motivationMap = {};
+    Map<DateTime, double> motivationMap = {};
     if (map['studentMotivation'] != null) {
       Map<String, dynamic> motivation = Map<String, dynamic>.from(map['studentMotivation']);
       motivation.forEach((key, value) {
-        motivationMap[DateTime.parse(key)] = value as int;
+        motivationMap[DateTime.parse(key)] = (value as num).toDouble();
       });
     }
 

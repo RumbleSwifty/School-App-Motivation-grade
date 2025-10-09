@@ -3,6 +3,7 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:motivation_grade_reports_student/services/auth_service.dart';
 import 'package:motivation_grade_reports_student/services/user_service.dart';
 import 'package:motivation_grade_reports_student/Models/staff_class.dart';
+import 'package:motivation_grade_reports_student/Models/student_class.dart';
 import 'package:motivation_grade_reports_student/pages/introduction_page.dart';
 
 class StaffHomePage extends StatefulWidget {
@@ -15,11 +16,13 @@ class _StaffHomePageState extends State<StaffHomePage> {
   final UserService _userService = UserService();
   Staff? currentStaff;
   bool isLoading = true;
+  List<Map<String, dynamic>> motivationSummary = [];
 
   @override
   void initState() {
     super.initState();
     _loadUserData();
+    _loadMotivationSummary();
   }
 
   /// Load current staff data from Firebase
@@ -38,6 +41,61 @@ class _StaffHomePageState extends State<StaffHomePage> {
       setState(() {
         isLoading = false;
       });
+    }
+  }
+
+  /// Load and aggregate student motivation data for the last 7 days
+  Future<void> _loadMotivationSummary() async {
+    try {
+      print('Loading motivation summary...');
+      // Get all students (you might want to filter by grades that this staff teaches)
+      List<Student> students = await _userService.getAllStudents();
+      print('Found ${students.length} students');
+      
+      // Get the last 7 days
+      DateTime now = DateTime.now();
+      Map<String, List<double>> dailyMotivations = {};
+      
+      for (int i = 6; i >= 0; i--) {
+        DateTime date = now.subtract(Duration(days: i));
+        String dateKey = "${date.day}/${date.month}";
+        dailyMotivations[dateKey] = [];
+      }
+      print('Created date keys: ${dailyMotivations.keys.toList()}');
+      
+      // Aggregate motivation data from all students
+      for (Student student in students) {
+        print('Processing student: ${student.name}, motivation entries: ${student.studentMotivation.length}');
+        student.studentMotivation.forEach((date, motivation) {
+          // Extract only the date part (ignore time) for comparison
+          DateTime dateOnly = DateTime(date.year, date.month, date.day);
+          String dateKey = "${dateOnly.day}/${dateOnly.month}";
+          print('Student motivation: $dateKey = $motivation (original date: $date)');
+          if (dailyMotivations.containsKey(dateKey)) {
+            // Motivation values are already on 0-10 scale as doubles, just add them directly
+            dailyMotivations[dateKey]!.add(motivation);
+            print('Added motivation $motivation for date $dateKey');
+          }
+        });
+      }
+      
+      // Calculate average motivation per day
+      motivationSummary = dailyMotivations.entries.map((entry) {
+        double average = entry.value.isEmpty 
+            ? 0 
+            : entry.value.reduce((a, b) => a + b) / entry.value.length;
+        print('Date ${entry.key}: ${entry.value.length} submissions, average: $average');
+        return {
+          'date': entry.key,
+          'averageMotivation': average,
+          'studentCount': entry.value.length,
+        };
+      }).toList();
+      
+      print('Final motivation summary: $motivationSummary');
+      setState(() {});
+    } catch (e) {
+      print('Error loading motivation summary: $e');
     }
   }
 
@@ -146,67 +204,88 @@ class _StaffHomePageState extends State<StaffHomePage> {
                     // Motivation Trends Title
                     Center(
                       child: Text(
-                        'Motivation trends (weekly)',
-                        style: TextStyle(fontWeight: FontWeight.bold),
+                        'Student Motivation Summary (Last 7 Days)',
+                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                       ),
                     ),
                     SizedBox(height: 8),
-                    // Simple Chart
+                    // Student Motivation Bar Chart
                     SizedBox(
-                      height: 180,
-                      child: LineChart(
-                        LineChartData(
-                          gridData: FlGridData(show: true, drawVerticalLine: true),
-                          titlesData: FlTitlesData(
-                            leftTitles: AxisTitles(
-                              sideTitles: SideTitles(
-                                showTitles: true,
-                                interval: 25,
-                                getTitlesWidget: (value, meta) => Text('${value.toInt()}'),
-                              ),
-                            ),
-                            bottomTitles: AxisTitles(
-                              sideTitles: SideTitles(
-                                showTitles: true,
-                                getTitlesWidget: (value, meta) {
-                                  const days = ['Mon.', 'Tues.', 'Wed.', 'Thur.', 'Fri.'];
-                                  return Text(days[value.toInt()]);
-                                },
-                                interval: 1,
-                              ),
-                            ),
-                            rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                            topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                          ),
-                          minX: 0,
-                          maxX: 4,
-                          minY: 0,
-                          maxY: 100,
-                          lineBarsData: [
-                            LineChartBarData(
-                              spots: [
-                                FlSpot(0, 50),
-                                FlSpot(1, 75),
-                                FlSpot(2, 60),
-                                FlSpot(3, 80),
-                                FlSpot(4, 30),
-                              ],
-                              isCurved: false,
-                              barWidth: 0,
-                              dotData: FlDotData(
-                                show: true,
-                                getDotPainter: (spot, percent, barData, index) => FlDotCirclePainter(
-                                  radius: 8,
-                                  color: Colors.black,
-                                  strokeWidth: 0,
+                      height: 200,
+                      child: motivationSummary.isEmpty
+                          ? Center(
+                              child: Text(
+                                'No motivation data available',
+                                style: TextStyle(
+                                  fontSize: 16,
+                                  color: Colors.grey[600],
                                 ),
                               ),
-                              belowBarData: BarAreaData(show: false),
-                              color: Colors.black,
+                            )
+                          : BarChart(
+                              BarChartData(
+                                alignment: BarChartAlignment.spaceAround,
+                                maxY: 10,
+                                minY: 0,
+                                gridData: FlGridData(
+                                  show: true,
+                                  drawHorizontalLine: true,
+                                  drawVerticalLine: false,
+                                  horizontalInterval: 2,
+                                ),
+                                titlesData: FlTitlesData(
+                                  leftTitles: AxisTitles(
+                                    sideTitles: SideTitles(
+                                      showTitles: true,
+                                      interval: 2,
+                                      getTitlesWidget: (value, meta) => Text(
+                                        '${value.toInt()}',
+                                        style: TextStyle(fontSize: 12),
+                                      ),
+                                    ),
+                                  ),
+                                  bottomTitles: AxisTitles(
+                                    sideTitles: SideTitles(
+                                      showTitles: true,
+                                      getTitlesWidget: (value, meta) {
+                                        if (value.toInt() < motivationSummary.length) {
+                                          return Text(
+                                            motivationSummary[value.toInt()]['date'],
+                                            style: TextStyle(fontSize: 10),
+                                          );
+                                        }
+                                        return Text('');
+                                      },
+                                    ),
+                                  ),
+                                  rightTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                                  topTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                                ),
+                                borderData: FlBorderData(show: false),
+                                barGroups: motivationSummary.asMap().entries.map((entry) {
+                                  int index = entry.key;
+                                  Map<String, dynamic> data = entry.value;
+                                  double motivation = data['averageMotivation'].toDouble();
+                                  
+                                  return BarChartGroupData(
+                                    x: index,
+                                    barRods: [
+                                      BarChartRodData(
+                                        toY: motivation,
+                                        color: Colors.orange[400],
+                                        width: 20,
+                                        borderRadius: BorderRadius.circular(4),
+                                        backDrawRodData: BackgroundBarChartRodData(
+                                          show: true,
+                                          toY: 10,
+                                          color: Colors.orange[100],
+                                        ),
+                                      ),
+                                    ],
+                                  );
+                                }).toList(),
+                              ),
                             ),
-                          ],
-                        ),
-                      ),
                     ),
                     SizedBox(height: 8),
                     Divider(color: Colors.purple[100]),

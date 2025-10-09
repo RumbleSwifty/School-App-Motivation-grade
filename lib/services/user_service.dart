@@ -9,93 +9,12 @@ import '../Models/student_class.dart';
 class UserService {
   static const String _staffCollection = 'staff';
   static const String _studentsCollection = 'students';
-  static const String _userRolesCollection = 'userRoles';
   
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
   /// Get current authenticated user
   User? get currentUser => _auth.currentUser;
-
-  /// Check if current user is a staff member
-  /// Returns true if user has staff role, false otherwise
-  Future<bool> isStaff() async {
-    if (currentUser == null) return false;
-    
-    try {
-      DocumentSnapshot roleDoc = await _firestore
-          .collection(_userRolesCollection)
-          .doc(currentUser!.uid)
-          .get();
-          
-      if (roleDoc.exists) {
-        Map<String, dynamic> data = roleDoc.data() as Map<String, dynamic>;
-        return data['role'] == 'staff';
-      }
-      return false;
-    } catch (e) {
-      print('Error checking user role: $e');
-      return false;
-    }
-  }
-
-  /// Check if current user is a student
-  /// Returns true if user has student role, false otherwise
-  Future<bool> isStudent() async {
-    if (currentUser == null) return false;
-    
-    try {
-      DocumentSnapshot roleDoc = await _firestore
-          .collection(_userRolesCollection)
-          .doc(currentUser!.uid)
-          .get();
-          
-      if (roleDoc.exists) {
-        Map<String, dynamic> data = roleDoc.data() as Map<String, dynamic>;
-        return data['role'] == 'student';
-      }
-      return false;
-    } catch (e) {
-      print('Error checking user role: $e');
-      return false;
-    }
-  }
-
-  /// Get user role as string ('staff', 'student', or 'unknown')
-  Future<String> getUserRole() async {
-    if (currentUser == null) return 'unknown';
-    
-    try {
-      DocumentSnapshot roleDoc = await _firestore
-          .collection(_userRolesCollection)
-          .doc(currentUser!.uid)
-          .get();
-          
-      if (roleDoc.exists) {
-        Map<String, dynamic> data = roleDoc.data() as Map<String, dynamic>;
-        return data['role'] ?? 'unknown';
-      }
-      return 'unknown';
-    } catch (e) {
-      print('Error getting user role: $e');
-      return 'unknown';
-    }
-  }
-
-  /// Set user role during registration
-  /// Should be called after successful user creation
-  Future<void> setUserRole(String userId, String role) async {
-    try {
-      await _firestore.collection(_userRolesCollection).doc(userId).set({
-        'role': role,
-        'userId': userId,
-        'createdAt': FieldValue.serverTimestamp(),
-      });
-    } catch (e) {
-      print('Error setting user role: $e');
-      throw Exception('Failed to set user role');
-    }
-  }
 
   // ========== STAFF METHODS ==========
 
@@ -175,22 +94,36 @@ class UserService {
   /// Fetch current logged-in student's profile
   /// Returns null if user is not student or profile doesn't exist
   Future<Student?> getCurrentStudent() async {
-    if (currentUser == null) return null;
+    print('getCurrentStudent called');
+    if (currentUser == null) {
+      print('No current user found');
+      return null;
+    }
+    
+    print('Current user UID: ${currentUser!.uid}');
     
     try {
+      print('Fetching document from students collection...');
       DocumentSnapshot doc = await _firestore
           .collection(_studentsCollection)
           .doc(currentUser!.uid)
           .get();
           
+      print('Document exists: ${doc.exists}');
       if (doc.exists) {
+        print('Document data: ${doc.data()}');
         Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
-        return Student.fromMap(data);
+        Student student = Student.fromMap(data);
+        print('Student created successfully: ${student.name}');
+        return student;
+      } else {
+        print('No document found for UID: ${currentUser!.uid}');
+        return null;
       }
-      return null;
     } catch (e) {
       print('Error fetching current student: $e');
-      throw Exception('Failed to fetch student profile');
+      print('Error type: ${e.runtimeType}');
+      throw Exception('Failed to fetch student profile: $e');
     }
   }
 
@@ -264,10 +197,10 @@ class UserService {
   // ========== UTILITY METHODS ==========
 
   /// Update student motivation data
-  Future<void> updateStudentMotivation(String studentId, Map<DateTime, int> motivationData) async {
+  Future<void> updateStudentMotivation(String studentId, Map<DateTime, double> motivationData) async {
     try {
       // Convert DateTime keys to ISO strings for Firestore
-      Map<String, int> firestoreMotivationData = motivationData.map(
+      Map<String, double> firestoreMotivationData = motivationData.map(
         (key, value) => MapEntry(key.toIso8601String(), value),
       );
 
@@ -333,33 +266,10 @@ class UserService {
       String collection = userType == 'staff' ? _staffCollection : _studentsCollection;
       
       await _firestore.collection(collection).doc(userId).delete();
-      await _firestore.collection(_userRolesCollection).doc(userId).delete();
     } catch (e) {
       print('Error deleting user profile: $e');
       throw Exception('Failed to delete user profile');
     }
   }
 
-  /// Listen to real-time changes for current user
-  Stream<dynamic> getCurrentUserStream() {
-    if (currentUser == null) return Stream.empty();
-    
-    return _firestore
-        .collection(_userRolesCollection)
-        .doc(currentUser!.uid)
-        .snapshots()
-        .asyncMap((roleDoc) async {
-          if (!roleDoc.exists) return null;
-          
-          Map<String, dynamic> roleData = roleDoc.data() as Map<String, dynamic>;
-          String role = roleData['role'];
-          
-          if (role == 'staff') {
-            return await getCurrentStaff();
-          } else if (role == 'student') {
-            return await getCurrentStudent();
-          }
-          return null;
-        });
-  }
 }

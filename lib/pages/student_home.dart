@@ -266,8 +266,10 @@ class _StudentHomePageState extends State<StudentHomePage> {
 
     try {
       // Add to student motivation data
-      Map<DateTime, int> updatedMotivation = Map.from(currentStudent!.studentMotivation);
-      updatedMotivation[DateTime.now()] = dailyMotivation.round();
+      Map<DateTime, double> updatedMotivation = Map.from(currentStudent!.studentMotivation);
+      // Convert slider value (0-1) to motivation scale (0-10) with one decimal precision
+      double motivationValue = double.parse((dailyMotivation * 10).toStringAsFixed(1));
+      updatedMotivation[DateTime.now()] = motivationValue;
 
       await _userService.updateStudentMotivation(currentStudent!.id, updatedMotivation);
 
