@@ -64,7 +64,7 @@ class Student {
       phone: map['phone'] ?? '',
       subjects: List<String>.from(map['subjects'] ?? []),
       grade: map['grade'] ?? '',
-      age: map['age'] ?? 0,
+      age: (map['age'] as num?)?.toInt() ?? 0, // Handle both int and double
       studentMotivation: motivationMap,
       profileImagePath: map['profileImagePath'],
     );

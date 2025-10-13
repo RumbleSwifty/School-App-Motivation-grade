@@ -5,6 +5,7 @@ import 'package:motivation_grade_reports_student/services/user_service.dart';
 import 'package:motivation_grade_reports_student/Models/staff_class.dart';
 import 'package:motivation_grade_reports_student/Models/student_class.dart';
 import 'package:motivation_grade_reports_student/pages/introduction_page.dart';
+import 'package:motivation_grade_reports_student/pages/announcement_page.dart';
 
 class StaffHomePage extends StatefulWidget {
   @override
@@ -297,82 +298,24 @@ class _StaffHomePageState extends State<StaffHomePage> {
                     ),
                     SizedBox(height: 8),
                     // Quick Action Buttons (Orange)
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: [
-                        ElevatedButton.icon(
-                          onPressed: () {},
-                          icon: Icon(Icons.add, color: Colors.white),
-                          label: Text('Add Material'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.orange,
-                            foregroundColor: Colors.white,
-                            shape: StadiumBorder(),
+                    ElevatedButton.icon(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => AnnouncementPage(isStudent: false),
                           ),
-                        ),
-                        ElevatedButton.icon(
-                          onPressed: () {},
-                          icon: Icon(Icons.announcement, color: Colors.white),
-                          label: Text('[New Announcements]'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.orange,
-                            foregroundColor: Colors.white,
-                            shape: StadiumBorder(),
-                          ),
-                        ),
-                        ElevatedButton.icon(
-                          onPressed: () {},
-                          icon: Icon(Icons.grade, color: Colors.white),
-                          label: Text('Grade Reports'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.orange,
-                            foregroundColor: Colors.white,
-                            shape: StadiumBorder(),
-                          ),
-                        ),
-                      ],
+                        );
+                      },
+                      icon: Icon(Icons.announcement, color: Colors.white),
+                      label: Text('New Announcements'),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.orange,
+                        foregroundColor: Colors.white,
+                        shape: StadiumBorder(),
+                      ),
                     ),
-                    SizedBox(height: 16),
-                    Divider(color: Colors.purple[100]),
-                    SizedBox(height: 8),
-                    // Other Actions (Purple)
-                    Wrap(
-                      spacing: 8,
-                      runSpacing: 8,
-                      children: [
-                        ElevatedButton.icon(
-                          onPressed: () {},
-                          icon: Icon(Icons.schedule, color: Colors.white),
-                          label: Text('Schedule'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.purple,
-                            foregroundColor: Colors.white,
-                            shape: StadiumBorder(),
-                          ),
-                        ),
-                        ElevatedButton.icon(
-                          onPressed: () {},
-                          icon: Icon(Icons.person, color: Colors.white),
-                          label: Text('Profiles'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.purple,
-                            foregroundColor: Colors.white,
-                            shape: StadiumBorder(),
-                          ),
-                        ),
-                        ElevatedButton.icon(
-                          onPressed: () {},
-                          icon: Icon(Icons.update, color: Colors.white),
-                          label: Text('Updates'),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.purple,
-                            foregroundColor: Colors.white,
-                            shape: StadiumBorder(),
-                          ),
-                        ),
-                      ],
-                    ),
+
                   ],
                 ),
               ),

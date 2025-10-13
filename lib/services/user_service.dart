@@ -2,6 +2,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../Models/staff_class.dart';
 import '../Models/student_class.dart';
+import '../Models/announcement_class.dart';
 
 /// Firebase service for managing user data (Staff and Students)
 /// This service handles CRUD operations for both staff and student profiles
@@ -9,6 +10,7 @@ import '../Models/student_class.dart';
 class UserService {
   static const String _staffCollection = 'staff';
   static const String _studentsCollection = 'students';
+  static const String _announcementsCollection = 'announcements';
   
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final FirebaseAuth _auth = FirebaseAuth.instance;
@@ -269,6 +271,136 @@ class UserService {
     } catch (e) {
       print('Error deleting user profile: $e');
       throw Exception('Failed to delete user profile');
+    }
+  }
+
+  // ========== ANNOUNCEMENT METHODS ==========
+
+  /// Create a new announcement
+  Future<void> createAnnouncement({
+    required String eventType,
+    required String title,
+    required String content,
+  }) async {
+    if (currentUser == null) {
+      throw Exception('User must be logged in to create announcements');
+    }
+
+    try {
+      // Get current staff information
+      Staff? currentStaff = await getCurrentStaff();
+      if (currentStaff == null) {
+        throw Exception('Only staff members can create announcements');
+      }
+
+      // Generate a unique ID for the announcement
+      String announcementId = _firestore.collection(_announcementsCollection).doc().id;
+
+      // Create the announcement object
+      Announcement announcement = Announcement(
+        id: announcementId,
+        eventType: eventType,
+        title: title,
+        content: content,
+        dateCreated: DateTime.now(),
+        staffName: '${currentStaff.name} ${currentStaff.surname}',
+      );
+
+      // Save to Firestore
+      await _firestore
+          .collection(_announcementsCollection)
+          .doc(announcementId)
+          .set(announcement.toMap());
+
+      print('Announcement created successfully: $announcementId');
+    } catch (e) {
+      print('Error creating announcement: $e');
+      throw Exception('Failed to create announcement: $e');
+    }
+  }
+
+  /// Get all announcements ordered by creation date (newest first)
+  Future<List<Announcement>> getAllAnnouncements() async {
+    try {
+      QuerySnapshot querySnapshot = await _firestore
+          .collection(_announcementsCollection)
+          .orderBy('dateCreated', descending: true)
+          .get();
+
+      return querySnapshot.docs.map((doc) {
+        Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+        return Announcement.fromMap(data);
+      }).toList();
+    } catch (e) {
+      print('Error fetching announcements: $e');
+      throw Exception('Failed to fetch announcements');
+    }
+  }
+
+  /// Get announcements by event type
+  Future<List<Announcement>> getAnnouncementsByEventType(String eventType) async {
+    try {
+      QuerySnapshot querySnapshot = await _firestore
+          .collection(_announcementsCollection)
+          .where('eventType', isEqualTo: eventType)
+          .orderBy('dateCreated', descending: true)
+          .get();
+
+      return querySnapshot.docs.map((doc) {
+        Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
+        return Announcement.fromMap(data);
+      }).toList();
+    } catch (e) {
+      print('Error fetching announcements by event type: $e');
+      throw Exception('Failed to fetch announcements');
+    }
+  }
+
+
+
+  /// Update an existing announcement
+  Future<void> updateAnnouncement(String announcementId, {
+    String? eventType,
+    String? title,
+    String? content,
+  }) async {
+    if (currentUser == null) {
+      throw Exception('User must be logged in to update announcements');
+    }
+
+    try {
+      Map<String, dynamic> updateData = {};
+      
+      if (eventType != null) updateData['eventType'] = eventType;
+      if (title != null) updateData['title'] = title;
+      if (content != null) updateData['content'] = content;
+
+      if (updateData.isNotEmpty) {
+        await _firestore
+            .collection(_announcementsCollection)
+            .doc(announcementId)
+            .update(updateData);
+      }
+    } catch (e) {
+      print('Error updating announcement: $e');
+      throw Exception('Failed to update announcement');
+    }
+  }
+
+  /// Delete an announcement
+  Future<void> deleteAnnouncement(String announcementId) async {
+    if (currentUser == null) {
+      throw Exception('User must be logged in to delete announcements');
+    }
+
+    try {
+      await _firestore
+          .collection(_announcementsCollection)
+          .doc(announcementId)
+          .delete();
+    } catch (e) {
+      print('Error deleting announcement: $e');
+      throw Exception('Failed to delete announcement');
     }
   }
 
