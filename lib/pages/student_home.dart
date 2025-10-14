@@ -3,6 +3,7 @@ import 'package:motivation_grade_reports_student/services/auth_service.dart';
 import 'package:motivation_grade_reports_student/services/user_service.dart';
 import 'package:motivation_grade_reports_student/Models/student_class.dart';
 import 'package:motivation_grade_reports_student/pages/introduction_page.dart';
+import 'package:motivation_grade_reports_student/pages/view_announcements_page.dart';
 
 class StudentHomePage extends StatefulWidget {
   @override
@@ -124,6 +125,29 @@ class _StudentHomePageState extends State<StudentHomePage> {
                                     ),
                                   ),
                               ],
+                            ),
+                          ),
+                          // Notification button
+                          GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => ViewAnnouncementsPage(),
+                                ),
+                              );
+                            },
+                            child: Container(
+                              padding: EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: Colors.purple[100],
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Icon(
+                                Icons.notifications,
+                                color: Colors.purple[800],
+                                size: 24,
+                              ),
                             ),
                           ),
                         ],

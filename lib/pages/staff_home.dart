@@ -6,6 +6,7 @@ import 'package:motivation_grade_reports_student/Models/staff_class.dart';
 import 'package:motivation_grade_reports_student/Models/student_class.dart';
 import 'package:motivation_grade_reports_student/pages/introduction_page.dart';
 import 'package:motivation_grade_reports_student/pages/announcement_page.dart';
+import 'package:motivation_grade_reports_student/pages/view_announcements_page.dart';
 
 class StaffHomePage extends StatefulWidget {
   @override
@@ -177,6 +178,30 @@ class _StaffHomePageState extends State<StaffHomePage> {
                                     ),
                                   ),
                               ],
+                            ),
+                          ),
+                          // Notification button
+                          GestureDetector(
+                            onTap: () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                  builder: (context) => ViewAnnouncementsPage(),
+                                ),
+                              );
+                            },
+                            child: Container(
+                              padding: EdgeInsets.all(8),
+                              margin: EdgeInsets.only(right: 8),
+                              decoration: BoxDecoration(
+                                color: Colors.orange[100],
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Icon(
+                                Icons.notifications,
+                                color: Colors.orange[800],
+                                size: 24,
+                              ),
                             ),
                           ),
                           // Logout Button
