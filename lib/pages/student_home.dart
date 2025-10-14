@@ -172,6 +172,8 @@ class _StudentHomePageState extends State<StudentHomePage> {
                     Slider(
                       value: dailyMotivation,
                       onChanged: (value) => setState(() => dailyMotivation = value),
+                      label: (dailyMotivation * 10).toString(),
+                      divisions: 40,
                       activeColor: Colors.purple,
                       inactiveColor: Colors.purple[100],
                     ),
