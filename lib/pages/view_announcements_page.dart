@@ -3,6 +3,10 @@ import 'package:motivation_grade_reports_student/services/user_service.dart';
 import 'package:motivation_grade_reports_student/Models/announcement_class.dart';
 
 class ViewAnnouncementsPage extends StatefulWidget {
+  final bool isStaff;
+
+  const ViewAnnouncementsPage({Key? key, this.isStaff = false}) : super(key: key);
+
   @override
   _ViewAnnouncementsPageState createState() => _ViewAnnouncementsPageState();
 }
@@ -42,6 +46,27 @@ class _ViewAnnouncementsPageState extends State<ViewAnnouncementsPage> {
       setState(() {
         isLoading = false;
       });
+    }
+  }
+
+  Future<void> _deleteAnnouncement(String announcementId) async {
+    try {
+      await _userService.deleteAnnouncement(announcementId);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Announcement deleted successfully!'),
+          backgroundColor: Colors.green,
+        ),
+      );
+      // Reload announcements
+      _loadAnnouncements();
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error deleting announcement: ${e.toString()}'),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
   }
 
@@ -93,24 +118,71 @@ class _ViewAnnouncementsPageState extends State<ViewAnnouncementsPage> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Container(
-                    padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                    decoration: BoxDecoration(
-                      color: _getEventTypeColor(announcement.eventType).withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(
-                        color: _getEventTypeColor(announcement.eventType),
-                        width: 1,
+                  Row(
+                    children: [
+                      Container(
+                        padding: EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        decoration: BoxDecoration(
+                          color: _getEventTypeColor(announcement.eventType).withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(
+                            color: _getEventTypeColor(announcement.eventType),
+                            width: 1,
+                          ),
+                        ),
+                        child: Text(
+                          announcement.eventType,
+                          style: TextStyle(
+                            color: _getEventTypeColor(announcement.eventType),
+                            fontWeight: FontWeight.bold,
+                            fontSize: 12,
+                          ),
+                        ),
                       ),
-                    ),
-                    child: Text(
-                      announcement.eventType,
-                      style: TextStyle(
-                        color: _getEventTypeColor(announcement.eventType),
-                        fontWeight: FontWeight.bold,
-                        fontSize: 12,
-                      ),
-                    ),
+                      if (widget.isStaff) ...[
+                        SizedBox(width: 8),
+                        GestureDetector(
+                          onTap: () {
+                            showDialog(
+                              context: context,
+                              builder: (BuildContext context) {
+                                return AlertDialog(
+                                  title: Text('Delete Announcement'),
+                                  content: Text('Are you sure you want to delete this announcement?'),
+                                  actions: [
+                                    TextButton(
+                                      child: Text('Cancel'),
+                                      onPressed: () {
+                                        Navigator.of(context).pop();
+                                      },
+                                    ),
+                                    TextButton(
+                                      child: Text('Delete', style: TextStyle(color: Colors.red)),
+                                      onPressed: () {
+                                        Navigator.of(context).pop();
+                                        _deleteAnnouncement(announcement.id);
+                                      },
+                                    ),
+                                  ],
+                                );
+                              },
+                            );
+                          },
+                          child: Container(
+                            padding: EdgeInsets.all(4),
+                            decoration: BoxDecoration(
+                              color: Colors.red[50],
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Icon(
+                              Icons.delete_outline,
+                              color: Colors.red,
+                              size: 16,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ],
                   ),
                   Text(
                     _formatDate(announcement.dateCreated),
@@ -183,7 +255,7 @@ class _ViewAnnouncementsPageState extends State<ViewAnnouncementsPage> {
             fontWeight: FontWeight.bold,
           ),
         ),
-        backgroundColor: Colors.purple,
+        backgroundColor: Colors.orange,
         iconTheme: IconThemeData(color: Colors.white),
         elevation: 0,
         actions: [
@@ -215,10 +287,10 @@ class _ViewAnnouncementsPageState extends State<ViewAnnouncementsPage> {
                         selectedFilter = filter;
                       });
                     },
-                    selectedColor: Colors.purple[100],
-                    checkmarkColor: Colors.purple,
+                    selectedColor: Colors.orange[100],
+                    checkmarkColor: Colors.orange,
                     labelStyle: TextStyle(
-                      color: isSelected ? Colors.purple : Colors.grey[700],
+                      color: isSelected ? Colors.orange : Colors.grey[700],
                       fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                     ),
                   ),
@@ -231,7 +303,7 @@ class _ViewAnnouncementsPageState extends State<ViewAnnouncementsPage> {
           Expanded(
             child: isLoading
                 ? Center(
-                    child: CircularProgressIndicator(color: Colors.purple),
+                    child: CircularProgressIndicator(color: Colors.orange),
                   )
                 : filteredAnnouncements.isEmpty
                     ? Center(

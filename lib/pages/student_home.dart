@@ -66,7 +66,7 @@ class _StudentHomePageState extends State<StudentHomePage> {
       backgroundColor: Colors.white,
       body: SafeArea(
         child: isLoading
-            ? Center(child: CircularProgressIndicator(color: Colors.purple))
+            ? Center(child: CircularProgressIndicator(color: Colors.orange))
             : Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
                 child: Column(
@@ -76,19 +76,29 @@ class _StudentHomePageState extends State<StudentHomePage> {
                     Container(
                       padding: EdgeInsets.all(16),
                       decoration: BoxDecoration(
-                        color: Colors.purple[50],
+                        color: Colors.orange[50],
                         borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: Colors.purple[200]!),
+                        border: Border.all(color: Colors.orange[200]!),
                       ),
                       child: Row(
                         children: [
                           // Profile Image
-                          CircleAvatar(
-                            radius: 30,
-                            backgroundImage: currentStudent?.profileImagePath != null
-                                ? AssetImage(currentStudent!.profileImagePath!)
-                                : AssetImage('assets/images/userprofile.png'),
-                            backgroundColor: Colors.purple[100],
+                          GestureDetector(
+                            onTap: () {
+                              // TODO: Implement profile image editing
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('Profile image editing feature coming soon!'),
+                                  backgroundColor: Colors.orange,
+                                ),
+                              );
+                            },
+                            child: CircleAvatar(
+                              radius: 30,
+                              backgroundImage: currentStudent?.profileImagePath != null
+                                  ? AssetImage(currentStudent!.profileImagePath!)
+                                  : AssetImage('assets/images/userprofile.png'),
+                            ),
                           ),
                           SizedBox(width: 16),
                           // User Info
@@ -103,7 +113,7 @@ class _StudentHomePageState extends State<StudentHomePage> {
                                   style: TextStyle(
                                     fontSize: 18,
                                     fontWeight: FontWeight.bold,
-                                    color: Colors.purple[800],
+                                    color: Colors.orange[800],
                                   ),
                                 ),
                                 SizedBox(height: 4),
@@ -113,7 +123,7 @@ class _StudentHomePageState extends State<StudentHomePage> {
                                       : '',
                                   style: TextStyle(
                                     fontSize: 14,
-                                    color: Colors.purple[600],
+                                    color: Colors.orange[600],
                                   ),
                                 ),
                                 if (currentStudent != null && currentStudent!.subjects.isNotEmpty)
@@ -133,19 +143,19 @@ class _StudentHomePageState extends State<StudentHomePage> {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => ViewAnnouncementsPage(),
+                                  builder: (context) => ViewAnnouncementsPage(isStaff: false),
                                 ),
                               );
                             },
                             child: Container(
                               padding: EdgeInsets.all(8),
                               decoration: BoxDecoration(
-                                color: Colors.purple[100],
+                                color: Colors.orange[100],
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: Icon(
                                 Icons.notifications,
-                                color: Colors.purple[800],
+                                color: Colors.orange[800],
                                 size: 24,
                               ),
                             ),
@@ -174,8 +184,8 @@ class _StudentHomePageState extends State<StudentHomePage> {
                       onChanged: (value) => setState(() => dailyMotivation = value),
                       label: (dailyMotivation * 10).toString(),
                       divisions: 40,
-                      activeColor: Colors.purple,
-                      inactiveColor: Colors.purple[100],
+                      activeColor: Colors.orange,
+                      inactiveColor: Colors.orange[100],
                     ),
                     
                     
@@ -193,7 +203,7 @@ class _StudentHomePageState extends State<StudentHomePage> {
                               );
                             },
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.purple,
+                              backgroundColor: Colors.orange,
                               foregroundColor: Colors.white,
                               shape: StadiumBorder(),
                               padding: EdgeInsets.symmetric(horizontal: 40, vertical: 20),
@@ -209,7 +219,7 @@ class _StudentHomePageState extends State<StudentHomePage> {
                           ElevatedButton(
                             onPressed: _hasSubmittedToday() ? null : _submitMotivation,
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: _hasSubmittedToday() ? Colors.grey : Colors.purple,
+                              backgroundColor: _hasSubmittedToday() ? Colors.grey : Colors.orange,
                               foregroundColor: Colors.white,
                               shape: StadiumBorder(),
                               padding: EdgeInsets.symmetric(horizontal: 40, vertical: 20),
@@ -229,16 +239,6 @@ class _StudentHomePageState extends State<StudentHomePage> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                       children: [
-                        TextButton.icon(
-                          onPressed: () {
-                            // TODO: Navigate to profile page
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(content: Text('Profile page coming soon!')),
-                            );
-                          },
-                          icon: Icon(Icons.person, color: Colors.purple),
-                          label: Text('Profile', style: TextStyle(color: Colors.purple)),
-                        ),
                         TextButton.icon(
                           onPressed: _signOut,
                           icon: Icon(Icons.logout, color: Colors.red),

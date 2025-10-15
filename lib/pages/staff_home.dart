@@ -121,11 +121,14 @@ class _StaffHomePageState extends State<StaffHomePage> {
       body: SafeArea(
         child: isLoading
             ? Center(child: CircularProgressIndicator(color: Colors.orange))
-            : SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
+            : Column(
+                children: [
+                  Expanded(
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
                     // Custom Profile Header
                     Container(
                       padding: EdgeInsets.all(16),
@@ -137,12 +140,23 @@ class _StaffHomePageState extends State<StaffHomePage> {
                       child: Row(
                         children: [
                           // Profile Image
-                          CircleAvatar(
-                            radius: 30,
-                            backgroundImage: currentStaff?.profileImagePath != null
-                                ? AssetImage(currentStaff!.profileImagePath!)
-                                : AssetImage('assets/images/userprofile.png'),
-                            backgroundColor: Colors.orange[100],
+                          GestureDetector(
+                            onTap: () {
+                              // TODO: Implement profile image editing
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text('Profile image editing feature coming soon!'),
+                                  backgroundColor: Colors.orange,
+                                ),
+                              );
+                            },
+                            child: CircleAvatar(
+                              radius: 30,
+                              backgroundImage: currentStaff?.profileImagePath != null
+                                  ? AssetImage(currentStaff!.profileImagePath!)
+                                  : AssetImage('assets/images/userprofile.png'),
+                              backgroundColor: Colors.orange[100],
+                            ),
                           ),
                           SizedBox(width: 16),
                           // User Info
@@ -186,7 +200,7 @@ class _StaffHomePageState extends State<StaffHomePage> {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => ViewAnnouncementsPage(),
+                                  builder: (context) => ViewAnnouncementsPage(isStaff: true),
                                 ),
                               );
                             },
@@ -204,18 +218,13 @@ class _StaffHomePageState extends State<StaffHomePage> {
                               ),
                             ),
                           ),
-                          // Logout Button
-                          GestureDetector(
-                            onTap: _signOut,
-                            child: Icon(Icons.logout, size: 28, color: Colors.red),
-                          ),
                         ],
                       ),
                     ),
                     SizedBox(height: 16),
                     // Date Card
                     Card(
-                      color: Colors.purple[50],
+                      color: Colors.orange[50],
                       child: Padding(
                         padding: const EdgeInsets.all(8.0),
                         child: Text(
@@ -225,7 +234,7 @@ class _StaffHomePageState extends State<StaffHomePage> {
                       ),
                     ),
                     SizedBox(height: 16),
-                    Divider(color: Colors.purple[100]),
+                    Divider(color: Colors.orange[100]),
                     SizedBox(height: 8),
                     // Motivation Trends Title
                     Center(
@@ -314,7 +323,7 @@ class _StaffHomePageState extends State<StaffHomePage> {
                             ),
                     ),
                     SizedBox(height: 8),
-                    Divider(color: Colors.purple[100]),
+                    Divider(color: Colors.orange[100]),
                     SizedBox(height: 8),
                     // Quick Actions Title
                     Text(
@@ -341,8 +350,26 @@ class _StaffHomePageState extends State<StaffHomePage> {
                       ),
                     ),
 
-                  ],
-                ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  
+                  // Settings and logout section
+                  Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        TextButton.icon(
+                          onPressed: _signOut,
+                          icon: Icon(Icons.logout, color: Colors.red),
+                          label: Text('Sign Out', style: TextStyle(color: Colors.red)),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
       ),
     );

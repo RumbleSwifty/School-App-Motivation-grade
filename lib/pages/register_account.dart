@@ -368,7 +368,7 @@ class _RegisterAccountScreenState extends State<RegisterAccountScreen> {
                               }
                             });
                           },
-                          selectedColor: Color.fromARGB(255, 168, 128, 230),
+                          selectedColor: Colors.orange,
                           backgroundColor: Colors.grey[200],
                           labelStyle: TextStyle(
                             color: isSelected ? Colors.white : Colors.black,
@@ -409,7 +409,7 @@ class _RegisterAccountScreenState extends State<RegisterAccountScreen> {
                             }
                           });
                         },
-                        selectedColor: Color.fromARGB(255, 168, 128, 230),
+                        selectedColor: Colors.orange,
                         backgroundColor: Colors.grey[200],
                         labelStyle: TextStyle(
                           color: isSelected ? Colors.white : Colors.black,
@@ -486,7 +486,7 @@ class _RegisterAccountScreenState extends State<RegisterAccountScreen> {
                         style: TextStyle(fontSize: 18, color: Colors.white),
                       ),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color.fromARGB(255, 242, 17, 17),
+                        backgroundColor: Colors.orange,
                         foregroundColor: Colors.white,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(18),

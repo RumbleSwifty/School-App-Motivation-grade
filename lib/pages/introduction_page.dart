@@ -21,6 +21,11 @@ class Introduction extends StatelessWidget {
                 MaterialPageRoute(builder: (context) => LoginScreen(isStudent: false ,)),
               );
             },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.orange,
+              foregroundColor: Colors.white,
+              padding: EdgeInsets.symmetric(horizontal: 40, vertical: 16),
+            ),
             child: Text("Login as Staff"),
           ),
           SizedBox(height: 20), // Add some space between the buttons
@@ -32,6 +37,11 @@ class Introduction extends StatelessWidget {
                 MaterialPageRoute(builder: (context) => LoginScreen(isStudent: true,)),
               );
             },
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.orange,
+              foregroundColor: Colors.white,
+              padding: EdgeInsets.symmetric(horizontal: 40, vertical: 16),
+            ),
             child: Text("Login as Student"),
           ),
           ],
