@@ -4,6 +4,10 @@ import 'package:motivation_grade_reports_student/services/user_service.dart';
 import 'package:motivation_grade_reports_student/Models/student_class.dart';
 import 'package:motivation_grade_reports_student/pages/introduction_page.dart';
 import 'package:motivation_grade_reports_student/pages/view_announcements_page.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:path_provider/path_provider.dart';
+import 'dart:io';
+import 'dart:typed_data';
 
 class StudentHomePage extends StatefulWidget {
   @override
@@ -13,6 +17,7 @@ class StudentHomePage extends StatefulWidget {
 class _StudentHomePageState extends State<StudentHomePage> {
   final AuthService _authService = AuthService();
   final UserService _userService = UserService();
+  final ImagePicker _picker = ImagePicker();
   Student? currentStudent;
   double dailyMotivation = 0.5;
   bool isLoading = true;
@@ -60,6 +65,243 @@ class _StudentHomePageState extends State<StudentHomePage> {
     }
   }
 
+  /// Show image picker dialog to change profile image
+  Future<void> _changeProfileImage() async {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (BuildContext context) {
+        return Container(
+          padding: EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey[300],
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              SizedBox(height: 20),
+              Text(
+                'Change Profile Picture',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.grey[800],
+                ),
+              ),
+              SizedBox(height: 20),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  // Camera option
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.pop(context);
+                      _pickImage(ImageSource.camera);
+                    },
+                    child: Column(
+                      children: [
+                        Container(
+                          padding: EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: Colors.orange[100],
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Icon(
+                            Icons.camera_alt,
+                            color: Colors.orange[800],
+                            size: 32,
+                          ),
+                        ),
+                        SizedBox(height: 8),
+                        Text(
+                          'Camera',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey[700],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  // Gallery option
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.pop(context);
+                      _pickImage(ImageSource.gallery);
+                    },
+                    child: Column(
+                      children: [
+                        Container(
+                          padding: EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: Colors.orange[100],
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Icon(
+                            Icons.photo_library,
+                            color: Colors.orange[800],
+                            size: 32,
+                          ),
+                        ),
+                        SizedBox(height: 8),
+                        Text(
+                          'Gallery',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey[700],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  // Remove option
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.pop(context);
+                      _removeProfileImage();
+                    },
+                    child: Column(
+                      children: [
+                        Container(
+                          padding: EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: Colors.red[100],
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Icon(
+                            Icons.delete_outline,
+                            color: Colors.red[800],
+                            size: 32,
+                          ),
+                        ),
+                        SizedBox(height: 8),
+                        Text(
+                          'Remove',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey[700],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: 20),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  /// Pick image from camera or gallery
+  Future<void> _pickImage(ImageSource source) async {
+    try {
+      final XFile? image = await _picker.pickImage(
+        source: source,
+        maxWidth: 512,
+        maxHeight: 512,
+        imageQuality: 70,
+      );
+
+      if (image != null && currentStudent != null) {
+        // Show loading
+        setState(() {
+          isLoading = true;
+        });
+
+        // Save image to app documents directory
+        final String imagePath = await _saveImageToLocal(image);
+        
+        // Update profile in Firebase
+        await _userService.updateStudentProfileImage(currentStudent!.id, imagePath);
+        
+        // Reload user data to reflect changes
+        await _loadUserData();
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Profile picture updated successfully!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      setState(() {
+        isLoading = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error updating profile picture: ${e.toString()}'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  /// Remove profile image
+  Future<void> _removeProfileImage() async {
+    if (currentStudent == null) return;
+
+    try {
+      setState(() {
+        isLoading = true;
+      });
+
+      // Update profile in Firebase (set to null)
+      await _userService.updateStudentProfileImage(currentStudent!.id, null);
+      
+      // Reload user data to reflect changes
+      await _loadUserData();
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Profile picture removed successfully!'),
+          backgroundColor: Colors.green,
+        ),
+      );
+    } catch (e) {
+      setState(() {
+        isLoading = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error removing profile picture: ${e.toString()}'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  /// Save image to local app directory
+  Future<String> _saveImageToLocal(XFile image) async {
+    final Directory appDocDir = await getApplicationDocumentsDirectory();
+    final String profileImagesDir = '${appDocDir.path}/profile_images';
+    
+    // Create directory if it doesn't exist
+    await Directory(profileImagesDir).create(recursive: true);
+    
+    // Generate unique filename
+    final String fileName = 'student_${currentStudent!.id}_${DateTime.now().millisecondsSinceEpoch}.jpg';
+    final String newPath = '$profileImagesDir/$fileName';
+    
+    // Copy image to new location
+    final Uint8List imageBytes = await image.readAsBytes();
+    final File newImage = File(newPath);
+    await newImage.writeAsBytes(imageBytes);
+    
+    return newPath;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -84,20 +326,12 @@ class _StudentHomePageState extends State<StudentHomePage> {
                         children: [
                           // Profile Image
                           GestureDetector(
-                            onTap: () {
-                              // TODO: Implement profile image editing
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text('Profile image editing feature coming soon!'),
-                                  backgroundColor: Colors.orange,
-                                ),
-                              );
-                            },
+                            onTap: _changeProfileImage,
                             child: CircleAvatar(
                               radius: 30,
                               backgroundImage: currentStudent?.profileImagePath != null
-                                  ? AssetImage(currentStudent!.profileImagePath!)
-                                  : AssetImage('assets/images/userprofile.png'),
+                                  ? FileImage(File(currentStudent!.profileImagePath!))
+                                  : AssetImage('assets/images/userprofile.png') as ImageProvider,
                             ),
                           ),
                           SizedBox(width: 16),
@@ -193,43 +427,18 @@ class _StudentHomePageState extends State<StudentHomePage> {
                     
                     // Action Buttons
                     Center(
-                      child: Column(
-                        children: [
-                          ElevatedButton(
-                            onPressed: () {
-                              // TODO: Implement add material functionality
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(content: Text('Add Material feature coming soon!')),
-                              );
-                            },
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.orange,
-                              foregroundColor: Colors.white,
-                              shape: StadiumBorder(),
-                              padding: EdgeInsets.symmetric(horizontal: 40, vertical: 20),
-                            ),
-                            child: Text(
-                              '+ Add Material',
-                              style: TextStyle(fontSize: 18),
-                            ),
-                          ),
-                          
-                          SizedBox(height: 16),
-                          
-                          ElevatedButton(
-                            onPressed: _hasSubmittedToday() ? null : _submitMotivation,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: _hasSubmittedToday() ? Colors.grey : Colors.orange,
-                              foregroundColor: Colors.white,
-                              shape: StadiumBorder(),
-                              padding: EdgeInsets.symmetric(horizontal: 40, vertical: 20),
-                            ),
-                            child: Text(
-                              _hasSubmittedToday() ? 'Already Submitted Today' : 'Submit Motivation',
-                              style: TextStyle(fontSize: 18),
-                            ),
-                          ),
-                        ],
+                      child: ElevatedButton(
+                        onPressed: _hasSubmittedToday() ? null : _submitMotivation,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: _hasSubmittedToday() ? Colors.grey : Colors.orange,
+                          foregroundColor: Colors.white,
+                          shape: StadiumBorder(),
+                          padding: EdgeInsets.symmetric(horizontal: 40, vertical: 20),
+                        ),
+                        child: Text(
+                          _hasSubmittedToday() ? 'Already Submitted Today' : 'Submit Motivation',
+                          style: TextStyle(fontSize: 18),
+                        ),
                       ),
                     ),
                     

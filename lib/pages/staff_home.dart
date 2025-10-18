@@ -7,6 +7,11 @@ import 'package:motivation_grade_reports_student/Models/student_class.dart';
 import 'package:motivation_grade_reports_student/pages/introduction_page.dart';
 import 'package:motivation_grade_reports_student/pages/announcement_page.dart';
 import 'package:motivation_grade_reports_student/pages/view_announcements_page.dart';
+import 'package:motivation_grade_reports_student/widgets/student_listview.dart';
+import 'package:image_picker/image_picker.dart';
+import 'package:path_provider/path_provider.dart';
+import 'dart:io';
+import 'dart:typed_data';
 
 class StaffHomePage extends StatefulWidget {
   @override
@@ -16,6 +21,7 @@ class StaffHomePage extends StatefulWidget {
 class _StaffHomePageState extends State<StaffHomePage> {
   final AuthService _authService = AuthService();
   final UserService _userService = UserService();
+  final ImagePicker _picker = ImagePicker();
   Staff? currentStaff;
   bool isLoading = true;
   List<Map<String, dynamic>> motivationSummary = [];
@@ -114,6 +120,243 @@ class _StaffHomePageState extends State<StaffHomePage> {
       );
     }
   }
+
+  /// Show image picker dialog to change profile image
+  Future<void> _changeProfileImage() async {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (BuildContext context) {
+        return Container(
+          padding: EdgeInsets.all(20),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 40,
+                height: 4,
+                decoration: BoxDecoration(
+                  color: Colors.grey[300],
+                  borderRadius: BorderRadius.circular(2),
+                ),
+              ),
+              SizedBox(height: 20),
+              Text(
+                'Change Profile Picture',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.grey[800],
+                ),
+              ),
+              SizedBox(height: 20),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  // Camera option
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.pop(context);
+                      _pickImage(ImageSource.camera);
+                    },
+                    child: Column(
+                      children: [
+                        Container(
+                          padding: EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: Colors.orange[100],
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Icon(
+                            Icons.camera_alt,
+                            color: Colors.orange[800],
+                            size: 32,
+                          ),
+                        ),
+                        SizedBox(height: 8),
+                        Text(
+                          'Camera',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey[700],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  // Gallery option
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.pop(context);
+                      _pickImage(ImageSource.gallery);
+                    },
+                    child: Column(
+                      children: [
+                        Container(
+                          padding: EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: Colors.orange[100],
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Icon(
+                            Icons.photo_library,
+                            color: Colors.orange[800],
+                            size: 32,
+                          ),
+                        ),
+                        SizedBox(height: 8),
+                        Text(
+                          'Gallery',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey[700],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  // Remove option
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.pop(context);
+                      _removeProfileImage();
+                    },
+                    child: Column(
+                      children: [
+                        Container(
+                          padding: EdgeInsets.all(16),
+                          decoration: BoxDecoration(
+                            color: Colors.red[100],
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: Icon(
+                            Icons.delete_outline,
+                            color: Colors.red[800],
+                            size: 32,
+                          ),
+                        ),
+                        SizedBox(height: 8),
+                        Text(
+                          'Remove',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: Colors.grey[700],
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              SizedBox(height: 20),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  /// Pick image from camera or gallery
+  Future<void> _pickImage(ImageSource source) async {
+    try {
+      final XFile? image = await _picker.pickImage(
+        source: source,
+        maxWidth: 512,
+        maxHeight: 512,
+        imageQuality: 70,
+      );
+
+      if (image != null && currentStaff != null) {
+        // Show loading
+        setState(() {
+          isLoading = true;
+        });
+
+        // Save image to app documents directory
+        final String imagePath = await _saveImageToLocal(image);
+        
+        // Update profile in Firebase
+        await _userService.updateStaffProfileImage(currentStaff!.id, imagePath);
+        
+        // Reload user data to reflect changes
+        await _loadUserData();
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Profile picture updated successfully!'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+    } catch (e) {
+      setState(() {
+        isLoading = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error updating profile picture: ${e.toString()}'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  /// Remove profile image
+  Future<void> _removeProfileImage() async {
+    if (currentStaff == null) return;
+
+    try {
+      setState(() {
+        isLoading = true;
+      });
+
+      // Update profile in Firebase (set to null)
+      await _userService.updateStaffProfileImage(currentStaff!.id, null);
+      
+      // Reload user data to reflect changes
+      await _loadUserData();
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Profile picture removed successfully!'),
+          backgroundColor: Colors.green,
+        ),
+      );
+    } catch (e) {
+      setState(() {
+        isLoading = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error removing profile picture: ${e.toString()}'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
+  /// Save image to local app directory
+  Future<String> _saveImageToLocal(XFile image) async {
+    final Directory appDocDir = await getApplicationDocumentsDirectory();
+    final String profileImagesDir = '${appDocDir.path}/profile_images';
+    
+    // Create directory if it doesn't exist
+    await Directory(profileImagesDir).create(recursive: true);
+    
+    // Generate unique filename
+    final String fileName = 'staff_${currentStaff!.id}_${DateTime.now().millisecondsSinceEpoch}.jpg';
+    final String newPath = '$profileImagesDir/$fileName';
+    
+    // Copy image to new location
+    final Uint8List imageBytes = await image.readAsBytes();
+    final File newImage = File(newPath);
+    await newImage.writeAsBytes(imageBytes);
+    
+    return newPath;
+  }
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -141,20 +384,12 @@ class _StaffHomePageState extends State<StaffHomePage> {
                         children: [
                           // Profile Image
                           GestureDetector(
-                            onTap: () {
-                              // TODO: Implement profile image editing
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text('Profile image editing feature coming soon!'),
-                                  backgroundColor: Colors.orange,
-                                ),
-                              );
-                            },
+                            onTap: _changeProfileImage,
                             child: CircleAvatar(
                               radius: 30,
                               backgroundImage: currentStaff?.profileImagePath != null
-                                  ? AssetImage(currentStaff!.profileImagePath!)
-                                  : AssetImage('assets/images/userprofile.png'),
+                                  ? FileImage(File(currentStaff!.profileImagePath!))
+                                  : AssetImage('assets/images/userprofile.png') as ImageProvider,
                               backgroundColor: Colors.orange[100],
                             ),
                           ),
@@ -239,7 +474,7 @@ class _StaffHomePageState extends State<StaffHomePage> {
                     // Motivation Trends Title
                     Center(
                       child: Text(
-                        'Student Motivation Summary (Last 7 Days)',
+                        'Average Student Motivation (Last 7 Days)',
                         style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
                       ),
                     ),
@@ -324,6 +559,41 @@ class _StaffHomePageState extends State<StaffHomePage> {
                     ),
                     SizedBox(height: 8),
                     Divider(color: Colors.orange[100]),
+                    SizedBox(height: 16),
+                    // Student List Section
+                    SizedBox(
+                      height: 300,
+                      child: FutureBuilder<List<Student>>(
+                        future: _userService.getAllStudents(),
+                        builder: (context, snapshot) {
+                          if (snapshot.connectionState == ConnectionState.waiting) {
+                            return Center(
+                              child: CircularProgressIndicator(color: Colors.orange),
+                            );
+                          }
+                          if (snapshot.hasError) {
+                            return Center(
+                              child: Column(
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  Icon(Icons.error_outline, size: 48, color: Colors.red),
+                                  SizedBox(height: 8),
+                                  Text(
+                                    'Error loading students',
+                                    style: TextStyle(color: Colors.red),
+                                  ),
+                                ],
+                              ),
+                            );
+                          }
+                          return StudentMotivationListView(
+                            students: snapshot.data ?? [],
+                          );
+                        },
+                      ),
+                    ),
+                    SizedBox(height: 16),
+                    Divider(color: Colors.orange[100]),
                     SizedBox(height: 8),
                     // Quick Actions Title
                     Text(
@@ -349,6 +619,8 @@ class _StaffHomePageState extends State<StaffHomePage> {
                         shape: StadiumBorder(),
                       ),
                     ),
+
+                    
 
                         ],
                       ),

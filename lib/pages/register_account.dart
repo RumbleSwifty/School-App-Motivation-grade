@@ -177,7 +177,7 @@ class _RegisterAccountScreenState extends State<RegisterAccountScreen> {
   Widget build(BuildContext context) {
     OutlineInputBorder border = OutlineInputBorder(
       borderRadius: BorderRadius.circular(8),
-      borderSide: BorderSide(color: Color(0xFFD1C7E0)),
+      borderSide: BorderSide(color: Colors.orange[300]!),
     );
 
     return Scaffold(
@@ -190,12 +190,16 @@ class _RegisterAccountScreenState extends State<RegisterAccountScreen> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 SizedBox(height: 24),
-                // Status bar mimic
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Text('register account', style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                  ],
+                // Status bar mimic - Centered
+                Center(
+                  child: Text(
+                    'Register Account', 
+                    style: TextStyle(
+                      fontSize: 20, 
+                      fontWeight: FontWeight.bold,
+                      color: Colors.orange[800],
+                    ),
+                  ),
                 ),
 
                 SizedBox(height: 32),
@@ -205,13 +209,13 @@ class _RegisterAccountScreenState extends State<RegisterAccountScreen> {
                   decoration: InputDecoration(
                     labelText: "Name",
                     hintText: "Type your first name",
-                    suffixIcon: Icon(Icons.close, color: Colors.black54),
+                    suffixIcon: Icon(Icons.close, color: Colors.grey[600]),
                     border: border,
                     enabledBorder: border,
                     focusedBorder: border.copyWith(
-                      borderSide: BorderSide(color: Color.fromARGB(255, 168, 128, 230), width: 2),
+                      borderSide: BorderSide(color: Colors.orange[600]!, width: 2),
                     ),
-                    labelStyle: TextStyle(color: Color(0xFFD1C7E0)),
+                    labelStyle: TextStyle(color: Colors.orange[600]),
                   ),
                 ),
                 SizedBox(height: 20),
@@ -221,13 +225,13 @@ class _RegisterAccountScreenState extends State<RegisterAccountScreen> {
                   decoration: InputDecoration(
                     labelText: "Surname",
                     hintText: "Type your surname",
-                    suffixIcon: Icon(Icons.close, color: Colors.black54),
+                    suffixIcon: Icon(Icons.close, color: Colors.grey[600]),
                     border: border,
                     enabledBorder: border,
                     focusedBorder: border.copyWith(
-                      borderSide: BorderSide(color: Color.fromARGB(255, 168, 128, 230), width: 2),
+                      borderSide: BorderSide(color: Colors.orange[600]!, width: 2),
                     ),
-                    labelStyle: TextStyle(color: Color(0xFFD1C7E0)),
+                    labelStyle: TextStyle(color: Colors.orange[600]),
                   ),
                 ),
                 SizedBox(height: 20),
@@ -238,13 +242,13 @@ class _RegisterAccountScreenState extends State<RegisterAccountScreen> {
                   decoration: InputDecoration(
                     labelText: "Phone number",
                     hintText: "Type your phone number",
-                    suffixIcon: Icon(Icons.close, color: Colors.black54),
+                    suffixIcon: Icon(Icons.close, color: Colors.grey[600]),
                     border: border,
                     enabledBorder: border,
                     focusedBorder: border.copyWith(
-                      borderSide: BorderSide(color: Color.fromARGB(255, 168, 128, 230), width: 2),
+                      borderSide: BorderSide(color: Colors.orange[600]!, width: 2),
                     ),
-                    labelStyle: TextStyle(color: Color(0xFFD1C7E0)),
+                    labelStyle: TextStyle(color: Colors.orange[600]),
                   ),
                 ),
                 SizedBox(height: 20),
@@ -255,18 +259,18 @@ class _RegisterAccountScreenState extends State<RegisterAccountScreen> {
                   decoration: InputDecoration(
                     labelText: "Email",
                     hintText: "Type your email address",
-                    suffixIcon: Icon(Icons.close, color: Colors.black54),
+                    suffixIcon: Icon(Icons.close, color: Colors.grey[600]),
                     border: border,
                     enabledBorder: border,
                     focusedBorder: border.copyWith(
-                      borderSide: BorderSide(color: Color.fromARGB(255, 168, 128, 230), width: 2),
+                      borderSide: BorderSide(color: Colors.orange[600]!, width: 2),
                     ),
-                    labelStyle: TextStyle(color: Color(0xFFD1C7E0)),
+                    labelStyle: TextStyle(color: Colors.orange[600]),
                   ),
                 ),
                 SizedBox(height: 20),
                 // Birthdate (DatePicker)
-                Text("Birthdate", style: TextStyle(color: Color(0xFFD1C7E0))),
+                Text("Birthdate", style: TextStyle(color: Colors.orange[600])),
                 SizedBox(height: 8),
                 GestureDetector(
                   onTap: () async {
@@ -286,12 +290,12 @@ class _RegisterAccountScreenState extends State<RegisterAccountScreen> {
                     width: double.infinity,
                     padding: EdgeInsets.symmetric(vertical: 16, horizontal: 12),
                     decoration: BoxDecoration(
-                      border: Border.all(color: Color(0xFFD1C7E0)),
+                      border: Border.all(color: Colors.orange[300]!),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Row(
                       children: [
-                        Icon(Icons.calendar_today, color: Color(0xFFD1C7E0)),
+                        Icon(Icons.calendar_today, color: Colors.orange[600]),
                         SizedBox(width: 12),
                         Text(
                           _selectedBirthdate != null
@@ -311,7 +315,7 @@ class _RegisterAccountScreenState extends State<RegisterAccountScreen> {
                 // Grade Selection (for students) or Grades Teaching (for staff)
                 Text(
                   widget.isStudent ? "Select Grade" : "Select Grades Teaching",
-                  style: TextStyle(color: Color(0xFFD1C7E0), fontSize: 16, fontWeight: FontWeight.w500),
+                  style: TextStyle(color: Colors.orange[600], fontSize: 16, fontWeight: FontWeight.w500),
                 ),
                 SizedBox(height: 8),
                 if (widget.isStudent)
@@ -320,7 +324,7 @@ class _RegisterAccountScreenState extends State<RegisterAccountScreen> {
                     width: double.infinity,
                     padding: EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                     decoration: BoxDecoration(
-                      border: Border.all(color: Color(0xFFD1C7E0)),
+                      border: Border.all(color: Colors.orange[300]!),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: DropdownButtonHideUnderline(
@@ -348,7 +352,7 @@ class _RegisterAccountScreenState extends State<RegisterAccountScreen> {
                     width: double.infinity,
                     padding: EdgeInsets.all(8),
                     decoration: BoxDecoration(
-                      border: Border.all(color: Color(0xFFD1C7E0)),
+                      border: Border.all(color: Colors.orange[300]!),
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Wrap(
@@ -382,14 +386,14 @@ class _RegisterAccountScreenState extends State<RegisterAccountScreen> {
                 // Subjects Selection
                 Text(
                   "Select Subjects",
-                  style: TextStyle(color: Color(0xFFD1C7E0), fontSize: 16, fontWeight: FontWeight.w500),
+                  style: TextStyle(color: Colors.orange[600], fontSize: 16, fontWeight: FontWeight.w500),
                 ),
                 SizedBox(height: 8),
                 Container(
                   width: double.infinity,
                   padding: EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    border: Border.all(color: Color(0xFFD1C7E0)),
+                    border: Border.all(color: Colors.orange[300]!),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Wrap(
@@ -425,13 +429,13 @@ class _RegisterAccountScreenState extends State<RegisterAccountScreen> {
                   decoration: InputDecoration(
                     labelText: "Create Username",
                     hintText: "Type in your Username",
-                    suffixIcon: Icon(Icons.close, color: Colors.black54),
+                    suffixIcon: Icon(Icons.close, color: Colors.grey[600]),
                     border: border,
                     enabledBorder: border,
                     focusedBorder: border.copyWith(
-                      borderSide: BorderSide(color: Color(0xFFD1C7E0), width: 2),
+                      borderSide: BorderSide(color: Colors.orange[600]!, width: 2),
                     ),
-                    labelStyle: TextStyle(color: Color(0xFFD1C7E0)),
+                    labelStyle: TextStyle(color: Colors.orange[600]),
                   ),
                 ),
                 SizedBox(height: 20),
@@ -442,13 +446,13 @@ class _RegisterAccountScreenState extends State<RegisterAccountScreen> {
                   decoration: InputDecoration(
                     labelText: "New Password",
                     hintText: "type password",
-                    suffixIcon: Icon(Icons.close, color: Colors.black54),
+                    suffixIcon: Icon(Icons.close, color: Colors.grey[600]),
                     border: border,
                     enabledBorder: border,
                     focusedBorder: border.copyWith(
-                      borderSide: BorderSide(color: Color(0xFFD1C7E0), width: 2),
+                      borderSide: BorderSide(color: Colors.orange[600]!, width: 2),
                     ),
-                    labelStyle: TextStyle(color: Color(0xFFD1C7E0)),
+                    labelStyle: TextStyle(color: Colors.orange[600]),
                   ),
                 ),
                 SizedBox(height: 20),
@@ -459,13 +463,13 @@ class _RegisterAccountScreenState extends State<RegisterAccountScreen> {
                   decoration: InputDecoration(
                     labelText: "Confirm New Password",
                     hintText: "type password",
-                    suffixIcon: Icon(Icons.close, color: Colors.black54),
+                    suffixIcon: Icon(Icons.close, color: Colors.grey[600]),
                     border: border,
                     enabledBorder: border,
                     focusedBorder: border.copyWith(
-                      borderSide: BorderSide(color: Color(0xFFD1C7E0), width: 2),
+                      borderSide: BorderSide(color: Colors.orange[600]!, width: 2),
                     ),
-                    labelStyle: TextStyle(color: Color(0xFFD1C7E0)),
+                    labelStyle: TextStyle(color: Colors.orange[600]),
                   ),
                 ),
                 

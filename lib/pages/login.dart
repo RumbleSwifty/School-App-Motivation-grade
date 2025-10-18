@@ -89,16 +89,8 @@ class _LoginScreenState extends State<LoginScreen> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                SizedBox(height: 24),
+                SizedBox(height: 48),
                 
-                SizedBox(height: 48),
-                Center(
-                  child: Text(
-                    "LampEye",
-                    style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
-                  ),
-                ),
-                SizedBox(height: 48),
                 Text(
                   "Sign in your account",
                   textAlign: TextAlign.center,
