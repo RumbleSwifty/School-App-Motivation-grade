@@ -8,8 +8,7 @@ plugins {
 
 android {
     namespace = "com.example.motivation_grade_reports_student"
-    compileSdk = flutter.compileSdkVersion
-    //ndkVersion = flutter.ndkVersion
+    compileSdk = 35 // Updated to a specific version
     ndkVersion = "27.0.12077973"
 
     compileOptions {
@@ -18,19 +17,15 @@ android {
     }
 
     kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_11.toString()
+        jvmTarget = "11"
     }
 
     defaultConfig {
-        // TODO: Specify your own unique Application ID (https://developer.android.com/studio/build/application-id.html).
         applicationId = "com.example.motivation_grade_reports_student"
-        // You can update the following values to match your application needs.
-        // For more information, see: https://flutter.dev/to/review-gradle-config.
-        //minSdk = flutter.minSdkVersion
         minSdk = 23 // Minimum SDK version set to 23 for compatibility
-        targetSdk = flutter.targetSdkVersion
-        versionCode = flutter.versionCode
-        versionName = flutter.versionName
+        targetSdk = 35 // Updated to match compileSdk
+        versionCode = 1
+        versionName = "1.0.0"
     }
 
     buildTypes {
@@ -47,21 +42,11 @@ flutter {
 }
 
 dependencies {
-
-  // Import the Firebase BoM
-
-  implementation(platform("com.google.firebase:firebase-bom:34.0.0"))
-
-
-  // TODO: Add the dependencies for Firebase products you want to use
-
-  // When using the BoM, don't specify versions in Firebase dependencies
-
-  implementation("com.google.firebase:firebase-analytics")
-
-
-  // Add the dependencies for any other desired Firebase products
-
-  // https://firebase.google.com/docs/android/setup#available-libraries
-
+    // Import the Firebase BoM
+    implementation(platform("com.google.firebase:firebase-bom:33.7.0"))
+    
+    // Firebase dependencies
+    implementation("com.google.firebase:firebase-analytics")
+    implementation("com.google.firebase:firebase-auth")
+    implementation("com.google.firebase:firebase-firestore")
 }
